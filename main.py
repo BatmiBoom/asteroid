@@ -2,7 +2,7 @@ import pygame
 
 from asteroid_field import AsteroidField
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
-from groups import asteroids, drawable, updatable
+from groups import asteroids, drawable, shots, updatable
 from player import Player
 
 
@@ -37,6 +37,11 @@ def main():
             if a.collides_with(player):
                 print("GAME OVER")
                 running = False
+
+            for s in shots:
+                if a.collides_with(s):
+                    a.split()
+                    s.kill()
 
         # DRAW
         screen.fill("black")

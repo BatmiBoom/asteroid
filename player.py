@@ -1,7 +1,16 @@
 import pygame
 
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, PLAYER_SPEED, PLAYER_TURN_SPEED
+from constants import (
+    PLAYER_RADIUS,
+    PLAYER_SHOT_DELAY,
+    PLAYER_SHOT_SPEED,
+    PLAYER_SPEED,
+    PLAYER_TURN_SPEED,
+    SHOT_RADIUS,
+)
+from groups import drawable, shots, updatable
+from shot import Shot
 
 
 class Player(CircleShape):
@@ -9,6 +18,7 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS, groups)
         self.position = pygame.Vector2(x, y)
         self.rotation = 0
+        self.shot_delay = 0
 
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -27,6 +37,12 @@ class Player(CircleShape):
         mov_vector = pygame.Vector2(0, 1).rotate(self.rotation) * (PLAYER_SPEED * dt)
         self.position += mov_vector
 
+    def shot(self) -> None:
+        shot = Shot(
+            self.position.x, self.position.y, SHOT_RADIUS, [shots, updatable, drawable]
+        )
+        shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOT_SPEED
+
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
 
@@ -42,6 +58,14 @@ class Player(CircleShape):
 
         if keys[pygame.K_d]:
             self.rotate(dt)
+
+        # SHOT
+        if keys[pygame.K_SPACE]:
+            if self.shot_delay <= 0:
+                self.shot()
+                self.shot_delay = PLAYER_SHOT_DELAY
+
+        self.shot_delay -= dt
 
     def draw(self, screen: pygame.Surface) -> None:
         pygame.draw.polygon(screen, "white", self.triangle())
